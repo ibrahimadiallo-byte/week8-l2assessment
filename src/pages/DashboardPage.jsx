@@ -1,51 +1,33 @@
-import { useState, useEffect } from 'react'
-
 function DashboardPage() {
-  const [stats, setStats] = useState({
-    total: 0,
-    today: 0,
-    highUrgencyPercent: 0,
-    avgPerDay: 0
-  })
-  const [categoryData, setCategoryData] = useState([])
-  const [urgencyData, setUrgencyData] = useState({ High: 0, Medium: 0, Low: 0 })
+  const history = JSON.parse(localStorage.getItem('triageHistory') || '[]')
+  const today = new Date().toDateString()
+  const todayMessages = history.filter(item => 
+    new Date(item.timestamp).toDateString() === today
+  )
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
+  const total = history.length
+  const highUrgency = history.filter(h => h.urgency === 'High').length
+  const totalDays = total > 0 ? 7 : 1
 
-  const loadDashboardData = () => {
-    const history = JSON.parse(localStorage.getItem('triageHistory') || '[]')
-    const today = new Date().toDateString()
-    const todayMessages = history.filter(item => 
-      new Date(item.timestamp).toDateString() === today
-    )
-
-    // Calculate stats
-    const highUrgency = history.filter(h => h.urgency === 'High').length
-    const totalDays = history.length > 0 ? 7 : 1
-    
-    setStats({
-      total: history.length,
-      today: todayMessages.length,
-      highUrgencyPercent: history.length > 0 ? Math.round((highUrgency / history.length) * 100) : 0,
-      avgPerDay: Math.round(history.length / totalDays)
-    })
-
-    // Category distribution
-    const categories = {}
-    history.forEach(item => {
-      categories[item.category] = (categories[item.category] || 0) + 1
-    })
-    setCategoryData(Object.entries(categories).map(([name, count]) => ({ name, count })))
-
-    // Urgency breakdown
-    const urgency = { High: 0, Medium: 0, Low: 0 }
-    history.forEach(item => {
-      urgency[item.urgency] = (urgency[item.urgency] || 0) + 1
-    })
-    setUrgencyData(urgency)
+  const stats = {
+    total,
+    today: todayMessages.length,
+    highUrgencyPercent: total > 0 ? Math.round((highUrgency / total) * 100) : 0,
+    avgPerDay: Math.round(total / totalDays)
   }
+
+  // Category distribution
+  const categories = {}
+  history.forEach(item => {
+    categories[item.category] = (categories[item.category] || 0) + 1
+  })
+  const categoryData = Object.entries(categories).map(([name, count]) => ({ name, count }))
+
+  // Urgency breakdown
+  const urgencyData = { High: 0, Medium: 0, Low: 0 }
+  history.forEach(item => {
+    urgencyData[item.urgency] = (urgencyData[item.urgency] || 0) + 1
+  })
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

@@ -18,7 +18,13 @@ const actionTemplates = {
  * @returns {string} - Recommended next step
  */
 export function getRecommendedAction(category, urgency) {
-  return actionTemplates[category] || "No recommendation available."
+  const base = actionTemplates[category] || "No recommendation available."
+
+  if (urgency === 'High') {
+    return `${base} (High urgency — escalate to the on-call team.)`
+  }
+
+  return base
 }
 
 /**

@@ -1,30 +1,34 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 function HistoryPage() {
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState(() =>
+    JSON.parse(localStorage.getItem('triageHistory') || '[]')
+  )
   const [filter, setFilter] = useState('all')
   const [expandedIndex, setExpandedIndex] = useState(null)
-
-  useEffect(() => {
-    loadHistory()
-  }, [])
-
-  const loadHistory = () => {
-    const savedHistory = JSON.parse(localStorage.getItem('triageHistory') || '[]')
-    setHistory(savedHistory)
-  }
 
   const clearHistory = () => {
     if (window.confirm('Are you sure you want to clear all history?')) {
       localStorage.setItem('triageHistory', '[]')
       setHistory([])
+      setExpandedIndex(null)
     }
   }
 
-  const sortedHistory = [...history].sort((a, b) => 
-    a.message.localeCompare(b.message)
-  )
+  const deleteHistoryEntry = (timestamp) => {
+    const updated = history.filter(item => item.timestamp !== timestamp)
+    localStorage.setItem('triageHistory', JSON.stringify(updated))
+    setHistory(updated)
+    setExpandedIndex(null)
+  }
+
+  const sortedHistory = [...history].sort((a, b) => {
+    // Sort by most recent analysis first
+    const aTime = new Date(a.timestamp).getTime()
+    const bTime = new Date(b.timestamp).getTime()
+    return bTime - aTime
+  })
   
   const filteredHistory = filter === 'all' 
     ? sortedHistory 
@@ -129,8 +133,20 @@ function HistoryPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="text-gray-400 ml-4">
-                    {expandedIndex === index ? '▲' : '▼'}
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteHistoryEntry(item.timestamp)
+                      }}
+                      className="text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
+                      aria-label="Delete entry"
+                    >
+                      🗑
+                    </button>
+                    <div className="text-gray-400">
+                      {expandedIndex === index ? '▲' : '▼'}
+                    </div>
                   </div>
                 </div>
               </div>
