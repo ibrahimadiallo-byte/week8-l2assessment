@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { categorizeMessage } from '../utils/llmHelper'
+import { categorizeMessage, isMockMode } from '../utils/llmHelper'
 import { calculateUrgency } from '../utils/urgencyScorer'
 import { getRecommendedAction } from '../utils/templates'
 
@@ -69,10 +69,20 @@ function AnalyzePage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Analyze Customer Message</h1>
-          <p className="text-gray-600 mb-6">
-            Paste a customer support message below to automatically categorize and prioritize.
-          </p>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Analyze Customer Message</h1>
+              <p className="text-gray-600 mb-6">
+                Paste a customer support message below to automatically categorize and prioritize.
+              </p>
+            </div>
+            {isMockMode && (
+              <div className="inline-flex items-center gap-2 rounded-full bg-yellow-50 text-yellow-800 px-4 py-2 text-sm font-semibold">
+                <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                Running in MOCK mode (no API key configured)
+              </div>
+            )}
+          </div>
 
           {/* Input Section */}
           <div className="mb-4">
